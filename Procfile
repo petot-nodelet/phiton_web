@@ -1,0 +1,1 @@
+web: gunicorn combined_app:application --workers 3
