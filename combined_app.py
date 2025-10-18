@@ -1,20 +1,18 @@
 # combined_app.py
 from werkzeug.middleware.dispatcher import DispatcherMiddleware
-from werkzeug.wrappers import Response
+from werkzeug.wrappers import Request, Response
 
-# import the app objects from your modules
+# import apps
 import app_vuln as vuln_mod
 import app_secure as secure_mod
 
-# mount secure app at /secret and vuln app as default
-application = DispatcherMiddleware(vuln_mod.app, {
-    '/secret': secure_mod.app
+# vuln_mod.app and secure_mod.app are Flask WSGI apps
+vuln_app = vuln_mod.app
+secure_app = secure_mod.app
+
+# mount secure app under /secure (so /secure/* forwarded)
+application = DispatcherMiddleware(vuln_app, {
+    '/secure': secure_app
 })
 
-# optional: a small root fallback if needed
-def simple_404(environ, start_response):
-    res = Response('Not Found', status=404)
-    return res(environ, start_response)
-
-#if __name__ == "__main__":
-#    app.run()
+# ready for gunicorn: `gunicorn combined_app:application`
